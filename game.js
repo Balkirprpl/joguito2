@@ -57,6 +57,13 @@ function preload ()
 
 function create ()
 {
+    //teclas wasd
+    keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+    keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+
+    
     //  A simple background for our game
     this.add.image(512, 310, 'mapa');
 
@@ -206,7 +213,7 @@ function update ()
     }
 
     //alteração da velocidade de movimentação diagonal.
-    if (cursors.left.isDown && cursors.up.isDown)
+    if (keyA.isDown && keyW.isDown)
     {
         player.setVelocityX(-113.137);
         player.setVelocityY(-113.137);
@@ -214,7 +221,7 @@ function update ()
         player.anims.play('left', true);
     }
 
-    else if (cursors.left.isDown && cursors.down.isDown)
+    else if (keyA.isDown && keyS.isDown)
     {
         player.setVelocityX(-113.137);
         player.setVelocityY(113.137);
@@ -222,7 +229,7 @@ function update ()
         player.anims.play('left', true);
     }
 
-    else if (cursors.right.isDown && cursors.up.isDown)
+    else if (keyD.isDown && keyW.isDown)
     {
         player.setVelocityX(113.137);
         player.setVelocityY(-113.137);
@@ -230,7 +237,7 @@ function update ()
         player.anims.play('right', true);
     }
 
-    else if (cursors.right.isDown && cursors.down.isDown)
+    else if (keyD.isDown && keyS.isDown)
     {
         player.setVelocityX(113.137);
         player.setVelocityY(113.137);
@@ -240,13 +247,13 @@ function update ()
     
     // - fim -
 
-    else if (cursors.left.isDown)
+    else if (keyA.isDown)
     {
         player.setVelocityX(-160);
         right = false;
         player.anims.play('left', true);
     }
-    else if (cursors.right.isDown)
+    else if (keyD.isDown)
     {
         player.setVelocityX(160);
         right = true;
@@ -264,12 +271,12 @@ function update ()
         player.setVelocityX(0);
     }
 
-    if (cursors.up.isDown)
+    if (keyW.isDown)
     {
         player.setVelocityY(-160);
     }
     
-    else if (cursors.down.isDown)
+    else if (keyS.isDown)
     {
         player.setVelocityY(160);
     }

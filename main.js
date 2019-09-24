@@ -2,6 +2,7 @@ var config = {
     type: Phaser.AUTO,
     width: 1024,
     height: 620,
+    backgroundColor: "FFC0CB",
     physics: {
         default: 'arcade',
         arcade: {
@@ -19,11 +20,11 @@ var config = {
 var game = new Phaser.Game(config);
 
 function preload() {
-    this.load.image('mapa', 'assets/mapa.png');
+
 }
 
 function create () {
-    this.add.image(512, 310, 'mapa');
+    
 }
 
 function update () {
