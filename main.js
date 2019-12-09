@@ -1,5 +1,5 @@
 import { gameover } from "./gameover.js";
-import { tempo, pontos } from "./start.js";
+import { tempo, pontos, music } from "./start.js";
 
 console.log("main.js loaded!");
 
@@ -24,7 +24,6 @@ var xnegativo = -160;
 var xdiagnegativo = -113.137;
 var boosttime = 0;
 var temposla = 0;
-
 var mano = 0
 
 //max score win
@@ -69,6 +68,7 @@ var platforms;
 var playerBullets;
 var hittarget;
 var hitwall;
+var uptohit = true;
 var ammo = 6;
 var ammoshow = 6;
 var ammosheet;
@@ -84,6 +84,12 @@ var tocha1;
 var tocha2;
 var tocha3;
 var tocha4;
+
+//bandeiras
+var flag1;
+var flag2;
+
+var mute = false;
 var button;
 
 var main = new Phaser.Scene("Main");
@@ -136,7 +142,6 @@ var Bullet = new Phaser.Class({
         }
 
         this.rotation = Phaser.Math.Angle.Between(player.x, player.y, reticle.x, reticle.y) - 55; // angle bullet with shooters rotation
-        //this.born = 0; // Time since new bullet spawned
     },
 
     // Updates the position of the bullet each cycle
@@ -146,12 +151,11 @@ var Bullet = new Phaser.Class({
         this.born += delta;
 
         if (this.born > 300 || hittarget || hitwall) {
-            //this.setActive(false);
-            //this.setVisible(false);
-            //this.body.setEnable(false);
+          
             hittarget = false;
             hitwall = false;
             this.destroy();
+            uptohit = true
         }
     }
 
@@ -163,7 +167,10 @@ main.preload = function() {
     this.load.image("ground", "assets/platform.png");
     this.load.image("star", "assets/star.png");
     this.load.image("starblue", "assets/starblue.png");
-    this.load.image("bomb", "assets/bomb.png");
+    this.load.spritesheet("bomb", "assets/bomb.png", {
+        frameWidth: 148,
+        frameHeight: 168
+    });
     this.load.image("groundvertshort", "assets/platformvertshort.png");
     this.load.image("groundvert", "assets/platformvert.png");
     this.load.image("paredegeral", "assets/mapa1.png");
@@ -184,6 +191,10 @@ main.preload = function() {
         frameWidth: 14,
         frameHeight: 30
     });
+    this.load.spritesheet("flag", "assets/flag.png", {
+        frameWidth: 38,
+        frameHeight: 44
+    });
     this.load.image("pilar1", "assets/pilar1.png");
     this.load.image("pilar2", "assets/pilar2.png");
     this.load.image("pilar3", "assets/pilar3.png");
@@ -203,7 +214,6 @@ main.preload = function() {
         frameHeight: 64
     });
     //this.load.audio("footstep", "assets/footstep.mp3");
-    //this.load.audio("music", "assets/music.mp3");
 
     scorep1 = 0;
     scorep2 = 0;
@@ -211,7 +221,7 @@ main.preload = function() {
     player2life = 3;
 };
 
-main.create = function() {
+main.create = function(){
     //  A simple background for our game
     this.add.image(512, 310, "mapa");
     //limite tela
@@ -250,6 +260,20 @@ main.create = function() {
     this.input.on("pointerdown", function() {
         main.input.mouse.requestPointerLock();
         ingame = true;
+    });
+
+    
+    this.input.keyboard.on('keydown_M', function(){
+        if(mute)
+        {
+            music.play();
+            mute = false;
+        }
+        else
+        {
+            music.stop();
+            mute = true;
+        }
     });
 
     this.input.keyboard.on(
@@ -336,6 +360,8 @@ main.create = function() {
     tocha2 = this.add.sprite(992, 300, 'tocha');
     tocha3 = this.add.sprite(288, 44, 'tocha');
     tocha4 = this.add.sprite(736, 44, 'tocha');
+    flag1 = this.add.sprite(417, 46, 'flag');
+    flag2 = this.add.sprite(607, 46, 'flag');
 
     //Fullscreen
     var button = this.add
@@ -372,22 +398,6 @@ main.create = function() {
         this
     );
 
-    //munição txt
-    /*ammoshow = this.add.text(934, 430, "Munição:" + ammo, {
-        fontSize: "16px",
-        fill: "#ffffff"
-    });*/
-
-    reloadshow = this.add.text(934, 450, "", {
-        fontSize: "16px",
-        fill: "#ffffff"
-    });
-    //vida player2
-    /*player2lifeshow = this.add.text(10, 430, "Vida:" + player2life, {
-        fontSize: "16px",
-        fill: "#ffffff"
-    });*/
-
     //placares
     score2 = this.add.text(50, 200, scorep2, {
         fontSize: "32px",
@@ -401,6 +411,16 @@ main.create = function() {
     });
     //animações
 
+    //reticle
+    this.anims.create({
+        key: "bomb",
+        frames: this.anims.generateFrameNumbers("bomb", {
+            start: 0,
+            end: 14
+        }),
+        frameRate: 12,
+        repeat: -1
+    });
 
     //corações
     this.anims.create({
@@ -420,6 +440,18 @@ main.create = function() {
         }),
         frameRate: 10,
         repeat: -1
+    });
+    
+    //bandeira
+    this.anims.create({
+        key: "flag",
+        frames: this.anims.generateFrameNumbers("flag", {
+            start: 0,
+            end: 7
+        }),
+        frameRate: 10,
+        repeat: -1,
+        repeatDelay: 3000
     });
 
     //ammo
@@ -476,7 +508,7 @@ main.create = function() {
     });
 
     //retícula
-    reticle = this.physics.add.sprite(900, 300, "bomb");
+    reticle = this.physics.add.sprite(512, 310, "bomb").setScale(0.2);
     reticle.setCollideWorldBounds(true);
 
     //cursores setinhas
@@ -485,8 +517,6 @@ main.create = function() {
     //  Colisões
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(player, pilars);
-    //this.physics.add.collider(star, platforms);
-    //this.physics.add.collider(bombs, platforms);
     this.physics.add.collider(player, lake);
     this.physics.add.collider(player2, lake);
     this.physics.add.collider(player2, platforms);
@@ -514,13 +544,20 @@ main.create = function() {
             })
         };
     }
-};
 
-main.update = function() {
+    //dar play nas animações das tochas
     tocha1.anims.play("tocha", true);
     tocha2.anims.play("tocha", true);
     tocha3.anims.play("tocha", true);
     tocha4.anims.play("tocha", true);
+
+    flag1.anims.play("flag", true);
+    flag2.anims.play('flag', true);
+
+    reticle.anims.play('bomb', true);
+};
+
+main.update = function() {
     if (pontos <= scorep2 || pontos <= scorep1) {
         gamewin();
     }
@@ -587,7 +624,6 @@ main.update = function() {
         player2.setVelocityY(x);
         passos = true;
     } else {
-        //player.setVelocityX(0);
         player2.setVelocityY(0);
         passos = false;
     }
@@ -660,7 +696,11 @@ main.update = function() {
         xnegativo = -160;
         xdiag = 113.137;
         xdiagnegativo = -113.137;
-        boosttime++;
+        player2.clearTint();
+        if (boosttime <= 100)
+        {
+            boosttime ++;
+        };
     }
 
     //reload
@@ -694,38 +734,35 @@ function colisao() {
     ammo = 6;
     player2scored();
     ammosheet.setFrame(ammo);
-    //player2lifeshow.setText("Vida:" + player2life);
-    //ammoshow.setText("Munição:" + ammo);
+    boosttime = 0;
 }
 
 function hit() {
     hittarget = true;
-    //player2lifeshow.setText("Vida:" + player2life);
-    if (player2life === 0) {
+    player2.setTint(0xffff00);
+    
+    if (player2life === 1 && uptohit) {
         player2.setPosition(100, 340);
         player.setPosition(924, 340);
         player2life = 3;
         ammo = 6;
         ammosheet.setFrame(ammo)
         player1scored();
-        //player2lifeshow.setText("Vida:" + player2life);
+        boosttime = 0;
         heart.setFrame(0);
+        uptohit = false;
     }
-    else if (player2life === 1)
+    else if (player2life === 2 && uptohit)
     {
-        //player2lifeshow.setText("Vida:" + player2life);
         heart.setFrame(2);
         player2life = player2life - 1;
+        uptohit = false;
     }
-    else if (player2life === 2)
+    else if (player2life === 3 && uptohit)
     {
-        //player2lifeshow.setText("Vida:" + player2life);
         heart.setFrame(1);
         player2life = player2life - 1;
-    }
-    else if (player2life === 3)
-    {
-        player2life = player2life - 1;
+        uptohit = false;
     }
 }
 
@@ -733,16 +770,19 @@ function player1scored()
 {
     scorep1 = scorep1 + 1;
     score1.setText(scorep1);
+    player2life = 3;
 }
 
 function player2scored()
 {
     scorep2 = scorep2 + 1;
     score2.setText(scorep2);
+    player2life = 3;
 }
 
 function gamewin() {
     main.input.mouse.releasePointerLock();
+    music.stop();
     main.scene.start(gameover);
 }
 

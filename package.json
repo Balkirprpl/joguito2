@@ -17,7 +17,9 @@
     "url": "https://github.com/Balkirprpl/Lendas-da-Arena/issues"
   },
   "homepage": "https://github.com/Balkirprpl/Lendas-da-Arena#readme",
-  "dependencies": {},
+  "dependencies": {
+    "socket.io": "^2.3.0"
+  },
   "devDependencies": {
     "express": "^4.17.1"
   }
